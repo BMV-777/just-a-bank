@@ -109,21 +109,20 @@ const displayBalance = transaction => {
 
 displayBalance(account1.transactions);
 
-const displayTotal1 = transactions => {
-  const depositesTotal = transactions
-    .filter(tran => tran < 0)
+const displayTotal = function (account) {
+  const depositesTotal = account.transactions
+    .filter(trans => trans > 0)
     .reduce((acc, cur) => acc + cur, 0);
   labelSumOut.textContent = `${depositesTotal}$`;
 
-  const withdrawalTotal = transactions
-    .filter(tran => tran > 0)
+  const withdrawalTotal = account.transactions
+    .filter(trans => trans < 0)
     .reduce((acc, cur) => acc + cur, 0);
-
   labelSumIn.textContent = `${withdrawalTotal}$`;
 
-  const interestTotal = transactions
-    .filter(per => per > 0)
-    .map(depos => (depos * 1.1) / 100)
+  const interestTotal = account.transactions
+    .filter(trans => trans > 0)
+    .map(depos => (depos * account.interest) / 100)
     .filter((interest, index, arr) => {
       console.log(arr);
       return interest >= 5;
@@ -133,26 +132,35 @@ const displayTotal1 = transactions => {
   labelSumInterest.textContent = `${interestTotal}$`;
 };
 
-displayTotal1(account1.transactions);
+//9//167
 
-// const deposit = transaction => {
-//   const deposite = transaction
-//     .filter(tran => tran > 0)
-//     .reduce((acc, cur) => acc + cur, 0);
+let currentAccount;
 
-//   labelSumIn.textContent = `${deposite}$`;
-// };
+btnLogin.addEventListener('click', function (e) {
+  e.preventDefault();
 
-// deposit(account1.transactions);
+  currentAccount = accounts.find(
+    account => account.nickname === inputLoginUsername.value
+  );
 
-// const percentBalance = transaction => {
-//   const percent = transaction
-//     .filter(per => per < 0)
-//     .map(per => per * 0.01)
-//     .reduce((acc, cur) => acc + cur, 0);
+  console.log(currentAccount);
 
-//   labelSumInterest.textContent = `${Math.round(percent)}%`;
-// };
+  if (currentAccount?.pin === Number(inputLoginPin.value)) {
+    containerApp.style.opacity = 100;
 
-// percentBalance(account1.transactions);
-//9//159
+    labelWelcome.textContent = `Рады, что вы с нами, ${
+      currentAccount.userName.split(' ')[0]
+    }!`;
+
+    inputLoginUsername.value = '';
+    inputLoginPin.value = '';
+    inputLoginPin.blur();
+
+    displayTransaction(currentAccount.transactions);
+
+    displayBalance(currentAccount.transactions);
+
+    displayTotal(currentAccount);
+  }
+});
+//
