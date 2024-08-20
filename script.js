@@ -85,10 +85,6 @@ const displayTransaction = transactions => {
   });
 };
 
-displayTransaction(account1.transactions);
-
-// console.log(containerTransactions.innerHTML);
-
 const createNicknames = function (accs) {
   accs.forEach(function (acc) {
     acc.nickname = acc.userName
@@ -101,13 +97,13 @@ const createNicknames = function (accs) {
 
 createNicknames(accounts);
 
-const displayBalance = transaction => {
-  const balance = transaction.reduce((acc, cur) => acc + cur, 0);
+const displayBalance = account => {
+  const balance = account.transactions.reduce((acc, trans) => acc + trans, 0);
+
+  account.balance = balance;
 
   labelBalance.textContent = `${balance}$`;
 };
-
-displayBalance(account1.transactions);
 
 const displayTotal = function (account) {
   const depositesTotal = account.transactions
@@ -124,7 +120,7 @@ const displayTotal = function (account) {
     .filter(trans => trans > 0)
     .map(depos => (depos * account.interest) / 100)
     .filter((interest, index, arr) => {
-      console.log(arr);
+      // console.log(arr);
       return interest >= 5;
     })
     .reduce((acc, interest) => acc + interest, 0);
@@ -133,6 +129,13 @@ const displayTotal = function (account) {
 };
 
 //9//167
+const updateUi = account => {
+  displayTransaction(account.transactions);
+
+  displayBalance(account);
+
+  displayTotal(account);
+};
 
 let currentAccount;
 
@@ -156,11 +159,36 @@ btnLogin.addEventListener('click', function (e) {
     inputLoginPin.value = '';
     inputLoginPin.blur();
 
-    displayTransaction(currentAccount.transactions);
-
-    displayBalance(currentAccount.transactions);
-
-    displayTotal(currentAccount);
+    updateUi(currentAccount);
   }
 });
-//
+
+btnTransfer.addEventListener('click', function (e) {
+  e.preventDefault();
+
+  const transferAmount = Number(inputTransferAmount.value);
+
+  const recipientNickname = inputTransferTo.value;
+  const recipientAccount = accounts.find(
+    account => account.nickname === recipientNickname
+  );
+
+  inputTransferAmount.value = '';
+  inputTransferTo.value = '';
+
+  if (
+    transferAmount > 0 &&
+    currentAccount.balance >= transferAmount &&
+    recipientAccount &&
+    currentAccount.nickname !== recipientAccount?.nickname
+  ) {
+    currentAccount.transactions.push(-transferAmount);
+    recipientAccount.transactions.push(transferAmount);
+
+    updateUi(currentAccount);
+  }
+
+  console.log(transferAmount);
+  console.log(recipientAccount);
+});
+//9//168
